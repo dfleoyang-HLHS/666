@@ -1,1 +1,194 @@
-Hi
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6 分鐘感恩日記</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-brand">
+        <span class="logo" aria-hidden="true">🌿</span>
+        <div>
+          <h1>6 分鐘感恩日記</h1>
+          <p class="subtitle">每天 6 分鐘，培養感恩的心</p>
+        </div>
+      </div>
+      <div class="header-actions" id="headerActions" hidden>
+        <span class="save-status" id="saveStatus" aria-live="polite"></span>
+        <div class="user-chip" id="userChip">
+          <img id="userAvatar" alt="" width="32" height="32">
+          <span id="userName"></span>
+        </div>
+        <button type="button" class="btn btn-ghost" id="signOutBtn">登出</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Welcome / Login -->
+      <section class="card welcome-card" id="welcomeSection">
+        <div class="welcome-hero">
+          <div class="time-blocks">
+            <div class="time-block morning">
+              <span class="time-icon">☀️</span>
+              <strong>早晨 3 分鐘</strong>
+              <p>感恩三件事 · 今日目標 · 正向肯定</p>
+            </div>
+            <div class="time-block evening">
+              <span class="time-icon">🌙</span>
+              <strong>夜晚 3 分鐘</strong>
+              <p>今日美好 · 反思成長</p>
+            </div>
+          </div>
+          <p class="welcome-text">
+            您的日記將安全儲存在<strong>您自己的 Google 雲端硬碟</strong>中，只有您能存取。
+          </p>
+        </div>
+
+        <div class="setup-notice" id="setupNotice" hidden>
+          <p>首次使用請先設定 Google OAuth 用戶端 ID</p>
+          <button type="button" class="btn btn-secondary" id="openSetupBtn">設定說明</button>
+        </div>
+
+        <button type="button" class="btn btn-google" id="signInBtn">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          使用 Google 帳號登入
+        </button>
+      </section>
+
+      <!-- Journal -->
+      <section class="journal" id="journalSection" hidden>
+        <nav class="tab-nav" role="tablist">
+          <button type="button" class="tab active" data-tab="today" role="tab" aria-selected="true">今日日記</button>
+          <button type="button" class="tab" data-tab="history" role="tab" aria-selected="false">歷史紀錄</button>
+        </nav>
+
+        <div class="tab-panel active" id="todayPanel" role="tabpanel">
+          <div class="date-bar">
+            <button type="button" class="btn-icon" id="prevDayBtn" aria-label="前一天">‹</button>
+            <time id="currentDate" class="current-date"></time>
+            <button type="button" class="btn-icon" id="nextDayBtn" aria-label="後一天">›</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="todayBtn">回到今天</button>
+          </div>
+
+          <form id="journalForm" class="journal-form">
+            <fieldset class="form-section morning-section">
+              <legend>
+                <span class="section-icon">☀️</span>
+                早晨感恩（約 3 分鐘）
+              </legend>
+              <p class="section-hint">寫下三件讓您心存感激的事</p>
+
+              <label class="field-label" for="grateful1">感恩 ①</label>
+              <textarea id="grateful1" name="grateful1" rows="2" placeholder="例如：家人的陪伴、健康的身體…"></textarea>
+
+              <label class="field-label" for="grateful2">感恩 ②</label>
+              <textarea id="grateful2" name="grateful2" rows="2" placeholder=""></textarea>
+
+              <label class="field-label" for="grateful3">感恩 ③</label>
+              <textarea id="grateful3" name="grateful3" rows="2" placeholder=""></textarea>
+
+              <label class="field-label" for="greatDay">什麼能讓今天更美好？</label>
+              <textarea id="greatDay" name="greatDay" rows="2" placeholder="今天最想完成或體驗的事…"></textarea>
+
+              <label class="field-label" for="affirmation">今日正向肯定</label>
+              <textarea id="affirmation" name="affirmation" rows="2" placeholder="我是…（對自己說一句鼓勵的話）"></textarea>
+            </fieldset>
+
+            <fieldset class="form-section evening-section">
+              <legend>
+                <span class="section-icon">🌙</span>
+                夜晚反思（約 3 分鐘）
+              </legend>
+              <p class="section-hint">回顧今天三件美好的事，並思考如何更好</p>
+
+              <label class="field-label" for="amazing1">今日美好 ①</label>
+              <textarea id="amazing1" name="amazing1" rows="2" placeholder="今天發生的美好時刻…"></textarea>
+
+              <label class="field-label" for="amazing2">今日美好 ②</label>
+              <textarea id="amazing2" name="amazing2" rows="2" placeholder=""></textarea>
+
+              <label class="field-label" for="amazing3">今日美好 ③</label>
+              <textarea id="amazing3" name="amazing3" rows="2" placeholder=""></textarea>
+
+              <label class="field-label" for="better">如何讓今天更美好？</label>
+              <textarea id="better" name="better" rows="2" placeholder="溫和地反思，明天可以做得更好…"></textarea>
+            </fieldset>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="saveBtn">儲存至 Google 雲端硬碟</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="tab-panel" id="historyPanel" role="tabpanel" hidden>
+          <div class="history-header">
+            <h2>歷史紀錄</h2>
+            <p>瀏覽您過去的感恩日記</p>
+          </div>
+          <ul class="history-list" id="historyList"></ul>
+          <p class="empty-state" id="historyEmpty" hidden>尚無歷史紀錄，開始寫下第一篇感恩日記吧！</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>資料儲存於您的 Google 雲端硬碟 · 檔名：<code>感恩日記-gratitude-journal.json</code></p>
+    </footer>
+  </div>
+
+  <!-- Setup Modal -->
+  <dialog class="modal" id="setupModal">
+    <div class="modal-content">
+      <h2>Google OAuth 設定說明</h2>
+      <p>首次使用需建立 Google Cloud 專案並取得用戶端 ID：</p>
+      <ol class="setup-steps">
+        <li>前往 <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a></li>
+        <li>建立新專案（或選擇現有專案）</li>
+        <li>啟用 <strong>Google Drive API</strong></li>
+        <li>前往「憑證」→「建立憑證」→「OAuth 用戶端 ID」</li>
+        <li>應用程式類型選擇「網頁應用程式」</li>
+        <li>在「已授權的 JavaScript 來源」加入此網站的網址（例如 <code>http://localhost:8080</code>）</li>
+        <li>複製產生的用戶端 ID，貼到下方</li>
+      </ol>
+      <label class="field-label" for="clientIdInput">OAuth 用戶端 ID</label>
+      <input type="text" id="clientIdInput" placeholder="123456789-abcdef.apps.googleusercontent.com" autocomplete="off">
+      <p class="field-hint">用戶端 ID 僅儲存在您的瀏覽器中，不會上傳至任何伺服器。</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="closeSetupBtn">取消</button>
+        <button type="button" class="btn btn-primary" id="saveClientIdBtn">儲存設定</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- History Detail Modal -->
+  <dialog class="modal" id="historyModal">
+    <div class="modal-content">
+      <h2 id="historyModalTitle"></h2>
+      <div id="historyModalBody" class="history-detail"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="closeHistoryBtn">關閉</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/drive.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
