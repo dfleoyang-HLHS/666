@@ -3,6 +3,7 @@ const Auth = (() => {
   let tokenClient = null;
   let userProfile = null;
   let onAuthChange = null;
+  let pendingSignIn = null;
 
   function waitForGoogle() {
     return new Promise((resolve, reject) => {
@@ -30,20 +31,6 @@ const Auth = (() => {
     onAuthChange = callback;
   }
 
-  function clearTokenFromUrl() {
-    if (!location.hash && !location.search) return;
-    const hash = new URLSearchParams(location.hash.slice(1));
-    const search = new URLSearchParams(location.search);
-    if (
-      hash.has('access_token') ||
-      hash.has('error') ||
-      search.has('code') ||
-      search.has('error')
-    ) {
-      history.replaceState(null, '', getRedirectUri());
-    }
-  }
-
   function createTokenClient() {
     const clientId = getClientId();
     if (!clientId) {
@@ -53,27 +40,41 @@ const Auth = (() => {
     return google.accounts.oauth2.initTokenClient({
       client_id: clientId,
       scope: CONFIG.SCOPES,
-      ux_mode: 'redirect',
-      redirect_uri: getRedirectUri(),
+      ux_mode: 'popup',
       callback: async (response) => {
+        if (pendingSignIn?.timer) {
+          clearTimeout(pendingSignIn.timer);
+        }
+
         if (response.error) {
           const message = translateOAuthError(response.error);
           onAuthChange?.({ signedIn: false, error: message });
+          pendingSignIn?.reject?.(new Error(message));
+          pendingSignIn = null;
           return;
         }
 
         accessToken = response.access_token;
-        clearTokenFromUrl();
 
         try {
           await fetchProfile();
           onAuthChange?.({ signedIn: true, profile: userProfile });
+          pendingSignIn?.resolve?.({ accessToken, profile: userProfile });
         } catch (err) {
           onAuthChange?.({ signedIn: false, error: err.message });
+          pendingSignIn?.reject?.(err);
+        } finally {
+          pendingSignIn = null;
         }
       },
       error_callback: (err) => {
-        onAuthChange?.({ signedIn: false, error: translateOAuthError(err) });
+        if (pendingSignIn?.timer) {
+          clearTimeout(pendingSignIn.timer);
+        }
+        const message = translateOAuthError(err);
+        onAuthChange?.({ signedIn: false, error: message });
+        pendingSignIn?.reject?.(new Error(message));
+        pendingSignIn = null;
       },
     });
   }
@@ -100,27 +101,48 @@ const Auth = (() => {
 
   async function signIn() {
     const client = await ensureTokenClient();
-    client.requestAccessToken({ prompt: 'consent' });
-  }
 
-  async function handleRedirectReturn() {
-    const params = new URLSearchParams(location.hash.slice(1));
-    const error = params.get('error');
-    if (error) {
-      clearTokenFromUrl();
-      throw new Error(translateOAuthError(error));
-    }
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        pendingSignIn = null;
+        reject(new Error('登入逾時，請再試一次'));
+      }, CONFIG.SIGN_IN_TIMEOUT_MS);
 
-    const token = params.get('access_token');
-    if (!token || !hasClientId()) {
-      return false;
-    }
+      pendingSignIn = { resolve, reject, timer };
 
-    accessToken = token;
-    clearTokenFromUrl();
-    await ensureTokenClient();
-    await fetchProfile();
-    return true;
+      client.callback = async (response) => {
+        clearTimeout(timer);
+
+        if (response.error) {
+          const message = translateOAuthError(response.error);
+          onAuthChange?.({ signedIn: false, error: message });
+          pendingSignIn = null;
+          reject(new Error(message));
+          return;
+        }
+
+        accessToken = response.access_token;
+
+        try {
+          await fetchProfile();
+          onAuthChange?.({ signedIn: true, profile: userProfile });
+          pendingSignIn = null;
+          resolve({ accessToken, profile: userProfile });
+        } catch (err) {
+          onAuthChange?.({ signedIn: false, error: err.message });
+          pendingSignIn = null;
+          reject(err);
+        }
+      };
+
+      try {
+        client.requestAccessToken({ prompt: 'consent' });
+      } catch (err) {
+        clearTimeout(timer);
+        pendingSignIn = null;
+        reject(err);
+      }
+    });
   }
 
   function signOut() {
@@ -130,6 +152,7 @@ const Auth = (() => {
     accessToken = null;
     userProfile = null;
     tokenClient = null;
+    pendingSignIn = null;
     onAuthChange?.({ signedIn: false });
   }
 
@@ -159,7 +182,6 @@ const Auth = (() => {
     isSignedIn,
     refreshTokenIfNeeded,
     ensureTokenClient,
-    handleRedirectReturn,
     waitForGoogle,
   };
 })();

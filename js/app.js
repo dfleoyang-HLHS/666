@@ -291,14 +291,9 @@ const App = (() => {
 
   function updateSetupHints() {
     const origin = getAuthorizedOrigin();
-    const redirect = getRedirectUri();
     ['originHint', 'originDisplay'].forEach((id) => {
       const el = $(id);
       if (el) el.textContent = origin;
-    });
-    ['redirectHint', 'redirectDisplay'].forEach((id) => {
-      const el = $(id);
-      if (el) el.textContent = redirect;
     });
   }
 
@@ -314,12 +309,14 @@ const App = (() => {
       return;
     }
     els.signInBtn.disabled = true;
-    showToast('正在前往 Google 登入頁面…');
+    showToast('正在開啟 Google 登入視窗…');
     try {
       await Auth.signIn();
+      await completeSignIn();
     } catch (err) {
       console.error(err);
       showToast(translateOAuthError(err.message) || err.message || '登入失敗');
+    } finally {
       els.signInBtn.disabled = false;
     }
   }
@@ -422,19 +419,6 @@ const App = (() => {
           }
         }
       });
-
-      if (hasClientId()) {
-        Auth.handleRedirectReturn()
-          .then(async (returned) => {
-            if (!returned) return;
-            updateUIForAuth(true, Auth.getProfile());
-            await completeSignIn();
-          })
-          .catch((err) => {
-            console.error(err);
-            showToast(translateOAuthError(err.message) || err.message);
-          });
-      }
     } catch (err) {
       console.error(err);
       showToast('應用程式初始化失敗：' + err.message);
