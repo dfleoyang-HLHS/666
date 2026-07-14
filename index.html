@@ -169,20 +169,33 @@
       <ol class="setup-steps">
         <li>前往 <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a></li>
         <li>建立新專案（或選擇現有專案）</li>
-        <li>啟用 <strong>Google Drive API</strong></li>
+        <li>設定 OAuth 同意畫面並加入測試使用者（詳見下方說明）</li>
         <li>前往「憑證」→「建立憑證」→「OAuth 用戶端 ID」</li>
         <li>應用程式類型選擇「網頁應用程式」</li>
         <li>在「<strong>已授權的 JavaScript 來源</strong>」加入：<code id="originHint"></code></li>
-        <li>「已授權的重新導向 URI」<strong>留空即可</strong>（本應用使用彈出視窗登入，不需要設定）</li>
-        <li>到「OAuth 同意畫面」→「測試使用者」加入您的 Gmail</li>
+        <li>「已授權的重新導向 URI」<strong>留空即可</strong></li>
         <li>複製產生的用戶端 ID，貼到下方</li>
       </ol>
       <div class="origin-box">
-        <p><strong>請填入 GCP「已授權的 JavaScript 來源」：</strong></p>
+        <p><strong>① JavaScript 來源（憑證頁面）：</strong></p>
         <p><code id="originDisplay"></code></p>
         <p class="field-hint" style="margin-top:10px;color:var(--text-muted);">
-          注意：JavaScript 來源只能填網域（如上），不能包含 <code>/666/</code> 子目錄或結尾斜線。
-          這是 Google 的規定，與「重新導向 URI」是不同欄位。
+          只能填網域，不能包含 <code>/666/</code> 或結尾斜線。
+        </p>
+      </div>
+      <div class="origin-box">
+        <p><strong>② 加入測試使用者（OAuth 同意畫面）：</strong></p>
+        <ol class="setup-steps" style="margin-bottom:0;">
+          <li>左側選單點 <strong>API 和服務</strong> → <strong>OAuth 同意畫面</strong><br>（新版介面可能顯示為 <strong>Google Auth Platform</strong>）</li>
+          <li>若顯示「尚未設定」，點 <strong>開始設定</strong>，依序填寫應用程式名稱與聯絡 Email</li>
+          <li><strong>使用者類型</strong> 選 <strong>外部（External）</strong>，不要選「內部」</li>
+          <li>點上方分頁 <strong>目標對象（Audience）</strong></li>
+          <li>確認發布狀態為 <strong>測試中（Testing）</strong></li>
+          <li>在 <strong>測試使用者（Test users）</strong> 區塊點 <strong>+ 新增使用者</strong></li>
+          <li>輸入您要登入的 Gmail（例如 <code>yourname@gmail.com</code>）→ <strong>儲存</strong></li>
+        </ol>
+        <p class="field-hint" style="margin-top:10px;color:var(--text-muted);">
+          測試模式下，只有清單內的 Gmail 可以登入。Email 必須與登入時選擇的 Google 帳號完全相同。
         </p>
       </div>
       <label class="field-label" for="clientIdInput">OAuth 用戶端 ID</label>
