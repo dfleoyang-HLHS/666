@@ -382,27 +382,32 @@ const App = (() => {
   }
 
   function init() {
-    checkClientIdSetup();
-    bindEvents();
-    updateDateDisplay();
+    try {
+      checkClientIdSetup();
+      bindEvents();
+      updateDateDisplay();
 
-    Auth.init(async ({ signedIn, profile, error }) => {
-      if (error) {
-        showToast('登入失敗：' + error);
-        return;
-      }
-      updateUIForAuth(signedIn, profile);
-      if (signedIn) {
-        try {
-          await Drive.loadJournal();
-          loadDateEntry();
-          renderHistory();
-          setSaveStatus('saved', '已連線雲端硬碟');
-        } catch (err) {
-          showToast('載入日記失敗：' + err.message);
+      Auth.init(async ({ signedIn, profile, error }) => {
+        if (error) {
+          showToast('登入失敗：' + error);
+          return;
         }
-      }
-    });
+        updateUIForAuth(signedIn, profile);
+        if (signedIn) {
+          try {
+            await Drive.loadJournal();
+            loadDateEntry();
+            renderHistory();
+            setSaveStatus('saved', '已連線雲端硬碟');
+          } catch (err) {
+            showToast('載入日記失敗：' + err.message);
+          }
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      showToast('應用程式初始化失敗：' + err.message);
+    }
   }
 
   return { init };

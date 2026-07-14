@@ -3,6 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      var path = location.pathname;
+      if (path.endsWith('.html')) {
+        path = path.slice(0, path.lastIndexOf('/') + 1);
+      } else if (!path.endsWith('/')) {
+        path = path + '/';
+      }
+      var base = document.createElement('base');
+      base.href = path;
+      document.head.appendChild(base);
+    })();
+  </script>
   <title>6 分鐘感恩日記</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,7 +64,7 @@
           </p>
         </div>
 
-        <div class="setup-notice" id="setupNotice" hidden>
+        <div class="setup-notice" id="setupNotice">
           <p>首次使用請先設定 Google OAuth 用戶端 ID</p>
           <button type="button" class="btn btn-secondary" id="openSetupBtn">設定說明</button>
         </div>
@@ -186,9 +199,22 @@
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+  <noscript>
+    <p style="text-align:center;padding:2rem;color:#c0392b;">此應用程式需要啟用 JavaScript 才能運作。</p>
+  </noscript>
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/drive.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    window.addEventListener('error', function (e) {
+      var toast = document.getElementById('toast');
+      if (toast) {
+        toast.hidden = false;
+        toast.classList.add('show');
+        toast.textContent = '頁面載入發生錯誤，請重新整理或確認使用正確網址：' + location.origin + location.pathname.replace(/[^/]*$/, '');
+      }
+    });
+  </script>
 </body>
 </html>
