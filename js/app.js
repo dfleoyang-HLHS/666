@@ -241,28 +241,28 @@ const App = (() => {
   }
 
   function showHistoryDetail(key, entry) {
-    const [y, m, d] = key.split('-');
-    els.historyModalTitle.textContent = `${y} 年 ${m} 月 ${d} 日`;
+    const [year, month, day] = key.split('-');
+    els.historyModalTitle.textContent = `${year} 年 ${month} 月 ${day} 日`;
 
-    const m = entry.morning;
-    const e = entry.evening;
+    const morning = entry.morning;
+    const evening = entry.evening;
 
     els.historyModalBody.innerHTML = `
       <div class="history-detail-section">
         <h3>☀️ 早晨感恩</h3>
         <p><strong>感恩：</strong></p>
-        ${m.grateful.filter(Boolean).map((g) => `<p class="value">${escapeHtml(g)}</p>`).join('') || '<p class="value">（未填寫）</p>'}
+        ${morning.grateful.filter(Boolean).map((g) => `<p class="value">${escapeHtml(g)}</p>`).join('') || '<p class="value">（未填寫）</p>'}
         <p><strong>讓今天更美好：</strong></p>
-        <p class="value">${escapeHtml(m.greatDay) || '（未填寫）'}</p>
+        <p class="value">${escapeHtml(morning.greatDay) || '（未填寫）'}</p>
         <p><strong>正向肯定：</strong></p>
-        <p class="value">${escapeHtml(m.affirmation) || '（未填寫）'}</p>
+        <p class="value">${escapeHtml(morning.affirmation) || '（未填寫）'}</p>
       </div>
       <div class="history-detail-section">
         <h3>🌙 夜晚反思</h3>
         <p><strong>今日美好：</strong></p>
-        ${e.amazing.filter(Boolean).map((a) => `<p class="value">${escapeHtml(a)}</p>`).join('') || '<p class="value">（未填寫）</p>'}
+        ${evening.amazing.filter(Boolean).map((a) => `<p class="value">${escapeHtml(a)}</p>`).join('') || '<p class="value">（未填寫）</p>'}
         <p><strong>如何更好：</strong></p>
-        <p class="value">${escapeHtml(e.better) || '（未填寫）'}</p>
+        <p class="value">${escapeHtml(evening.better) || '（未填寫）'}</p>
       </div>
     `;
     els.historyModal.showModal();
@@ -353,6 +353,10 @@ const App = (() => {
   }
 
   function bindEvents() {
+    if (!els.signInBtn || !els.openSetupBtn) {
+      throw new Error('頁面元素載入失敗，請重新整理');
+    }
+
     els.signInBtn.addEventListener('click', handleSignIn);
     els.signOutBtn.addEventListener('click', handleSignOut);
     els.openSetupBtn.addEventListener('click', openSetupModal);
@@ -457,4 +461,15 @@ const App = (() => {
   return { init };
 })();
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+let appStarted = false;
+
+function startApp() {
+  if (appStarted) return;
+  appStarted = true;
+  App.init();
+}
+
+document.addEventListener('DOMContentLoaded', startApp);
+if (document.readyState !== 'loading') {
+  startApp();
+}
