@@ -291,9 +291,14 @@ const App = (() => {
 
   function updateSetupHints() {
     const origin = getAuthorizedOrigin();
+    const redirect = getRedirectUri();
     ['originHint', 'originDisplay'].forEach((id) => {
       const el = $(id);
       if (el) el.textContent = origin;
+    });
+    ['redirectHint', 'redirectDisplay'].forEach((id) => {
+      const el = $(id);
+      if (el) el.textContent = redirect;
     });
   }
 
@@ -309,24 +314,35 @@ const App = (() => {
       return;
     }
     els.signInBtn.disabled = true;
-    showToast('正在開啟 Google 登入視窗…');
+    showToast('正在前往 Google 登入頁面…');
     try {
       await Auth.signIn();
-      await completeSignIn();
     } catch (err) {
       console.error(err);
       showToast(translateOAuthError(err.message) || err.message || '登入失敗');
-    } finally {
       els.signInBtn.disabled = false;
     }
   }
 
   async function completeSignIn() {
-    await Drive.loadJournal();
-    loadDateEntry();
-    renderHistory();
-    setSaveStatus('saved', '已連線雲端硬碟');
-    showToast('登入成功！日記已從雲端硬碟載入');
+    try {
+      await Drive.loadJournal();
+      loadDateEntry();
+      renderHistory();
+      updateUIForAuth(true, Auth.getProfile());
+      setSaveStatus('saved', '已連線雲端硬碟');
+      showToast('登入成功！日記已從雲端硬碟載入');
+    } catch (err) {
+      console.error(err);
+      if (Auth.isSignedIn()) {
+        updateUIForAuth(true, Auth.getProfile());
+        showToast('Google 已登入，但雲端硬碟連線失敗：' + err.message);
+      } else {
+        throw err;
+      }
+    } finally {
+      els.signInBtn.disabled = false;
+    }
   }
 
   function handleSignOut() {
@@ -348,6 +364,7 @@ const App = (() => {
         return;
       }
       setClientId(id);
+      Auth.resetClient();
       els.setupModal.close();
       els.setupNotice.hidden = true;
       showToast('設定已儲存，請點擊登入');
@@ -419,6 +436,18 @@ const App = (() => {
           }
         }
       });
+
+      if (hasClientId()) {
+        Auth.handleRedirectReturn()
+          .then(async (returned) => {
+            if (returned) await completeSignIn();
+          })
+          .catch((err) => {
+            console.error(err);
+            showToast(translateOAuthError(err.message) || err.message);
+            els.signInBtn.disabled = false;
+          });
+      }
     } catch (err) {
       console.error(err);
       showToast('應用程式初始化失敗：' + err.message);

@@ -18,7 +18,7 @@ const OAUTH_ERROR_MESSAGES = {
   popup_failed_to_open: '瀏覽器阻擋了登入視窗，請允許此網站開啟彈出視窗後再試。',
   idpiframe_initialization_failed: '無法載入 Google 登入服務，請確認網路可連線至 Google，並關閉廣告阻擋器。',
   origin_mismatch: '網址與 GCP 設定不符。請在「已授權的 JavaScript 來源」加入此網站網域。',
-  redirect_uri_mismatch: 'OAuth 設定錯誤，請確認使用的是「網頁應用程式」類型的用戶端 ID。',
+  redirect_uri_mismatch: '重新導向 URI 不符。請在 GCP「已授權的重新導向 URI」加入下方顯示的網址（此欄位可含 /666/ 路徑）。',
   invalid_client: 'OAuth 用戶端 ID 無效，請確認 ID 是否正確，且來自仍存在的 GCP 專案。',
 };
 
@@ -37,6 +37,12 @@ function setClientId(clientId) {
 
 function hasClientId() {
   return Boolean(getClientId());
+}
+
+function getRedirectUri() {
+  const path = location.pathname.replace(/\/[^/]*$/, '/') || '/';
+  const normalized = path.endsWith('/') ? path : `${path}/`;
+  return `${location.origin}${normalized}`;
 }
 
 function getAuthorizedOrigin() {
