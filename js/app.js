@@ -289,7 +289,21 @@ const App = (() => {
     }
   }
 
+  function updateSetupHints() {
+    const origin = getAuthorizedOrigin();
+    const redirect = getRedirectUri();
+    ['originHint', 'originDisplay'].forEach((id) => {
+      const el = $(id);
+      if (el) el.textContent = origin;
+    });
+    ['redirectHint', 'redirectDisplay'].forEach((id) => {
+      const el = $(id);
+      if (el) el.textContent = redirect;
+    });
+  }
+
   function openSetupModal() {
+    updateSetupHints();
     els.clientIdInput.value = getClientId();
     els.setupModal.showModal();
   }
@@ -300,19 +314,22 @@ const App = (() => {
       return;
     }
     els.signInBtn.disabled = true;
+    showToast('正在前往 Google 登入頁面…');
     try {
       await Auth.signIn();
-      await Drive.loadJournal();
-      loadDateEntry();
-      renderHistory();
-      setSaveStatus('saved', '已連線雲端硬碟');
-      showToast('登入成功！日記已從雲端硬碟載入');
     } catch (err) {
       console.error(err);
-      showToast(err.message || '登入失敗');
-    } finally {
+      showToast(translateOAuthError(err.message) || err.message || '登入失敗');
       els.signInBtn.disabled = false;
     }
+  }
+
+  async function completeSignIn() {
+    await Drive.loadJournal();
+    loadDateEntry();
+    renderHistory();
+    setSaveStatus('saved', '已連線雲端硬碟');
+    showToast('登入成功！日記已從雲端硬碟載入');
   }
 
   function handleSignOut() {
@@ -383,13 +400,14 @@ const App = (() => {
 
   function init() {
     try {
+      updateSetupHints();
       checkClientIdSetup();
       bindEvents();
       updateDateDisplay();
 
       Auth.init(async ({ signedIn, profile, error }) => {
         if (error) {
-          showToast('登入失敗：' + error);
+          showToast(error);
           return;
         }
         updateUIForAuth(signedIn, profile);
@@ -404,6 +422,19 @@ const App = (() => {
           }
         }
       });
+
+      if (hasClientId()) {
+        Auth.handleRedirectReturn()
+          .then(async (returned) => {
+            if (!returned) return;
+            updateUIForAuth(true, Auth.getProfile());
+            await completeSignIn();
+          })
+          .catch((err) => {
+            console.error(err);
+            showToast(translateOAuthError(err.message) || err.message);
+          });
+      }
     } catch (err) {
       console.error(err);
       showToast('應用程式初始化失敗：' + err.message);

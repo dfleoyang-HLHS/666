@@ -172,9 +172,16 @@
         <li>啟用 <strong>Google Drive API</strong></li>
         <li>前往「憑證」→「建立憑證」→「OAuth 用戶端 ID」</li>
         <li>應用程式類型選擇「網頁應用程式」</li>
-        <li>在「已授權的 JavaScript 來源」加入此網站的網址（例如 <code>http://localhost:8080</code>）</li>
+        <li>在「已授權的 JavaScript 來源」加入：<code id="originHint"></code></li>
+        <li>在「已授權的重新導向 URI」加入：<code id="redirectHint"></code></li>
+        <li>到「OAuth 同意畫面」→「測試使用者」加入您的 Gmail</li>
         <li>複製產生的用戶端 ID，貼到下方</li>
       </ol>
+      <div class="origin-box">
+        <p><strong>此網站需要填入 GCP 的設定值：</strong></p>
+        <p>JavaScript 來源：<code id="originDisplay"></code></p>
+        <p>重新導向 URI：<code id="redirectDisplay"></code></p>
+      </div>
       <label class="field-label" for="clientIdInput">OAuth 用戶端 ID</label>
       <input type="text" id="clientIdInput" placeholder="123456789-abcdef.apps.googleusercontent.com" autocomplete="off">
       <p class="field-hint">用戶端 ID 僅儲存在您的瀏覽器中，不會上傳至任何伺服器。</p>
