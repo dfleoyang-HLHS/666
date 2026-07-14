@@ -12,7 +12,7 @@ const Drive = (() => {
     const query = encodeURIComponent(
       `name='${CONFIG.DRIVE_FILE_NAME}' and trashed=false`
     );
-    const res = await fetch(`${API_BASE}/files?q=${query}&spaces=drive&fields=files(id,name)`, {
+    const res = await fetchWithTimeout(`${API_BASE}/files?q=${query}&spaces=drive&fields=files(id,name)`, {
       headers,
     });
     if (!res.ok) {
@@ -25,7 +25,7 @@ const Drive = (() => {
 
   async function downloadFile(fileId) {
     const headers = await authHeaders();
-    const res = await fetch(`${API_BASE}/files/${fileId}?alt=media`, { headers });
+    const res = await fetchWithTimeout(`${API_BASE}/files/${fileId}?alt=media`, { headers });
     if (!res.ok) throw new Error('讀取日記檔案失敗');
     const text = await res.text();
     if (!text.trim()) return createEmptyJournal();
@@ -56,7 +56,7 @@ const Drive = (() => {
       `${JSON.stringify(content)}\r\n` +
       `--${boundary}--`;
 
-    const res = await fetch(`${UPLOAD_BASE}/files?uploadType=multipart`, {
+    const res = await fetchWithTimeout(`${UPLOAD_BASE}/files?uploadType=multipart`, {
       method: 'POST',
       headers: {
         ...headers,
@@ -83,7 +83,7 @@ const Drive = (() => {
       `${JSON.stringify(content)}\r\n` +
       `--${boundary}--`;
 
-    const res = await fetch(`${UPLOAD_BASE}/files/${fileId}?uploadType=multipart`, {
+    const res = await fetchWithTimeout(`${UPLOAD_BASE}/files/${fileId}?uploadType=multipart`, {
       method: 'PATCH',
       headers: {
         ...headers,

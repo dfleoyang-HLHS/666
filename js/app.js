@@ -32,7 +32,15 @@ const App = (() => {
     historyModalBody: $('historyModalBody'),
     closeHistoryBtn: $('closeHistoryBtn'),
     toast: $('toast'),
+    loadingOverlay: $('loadingOverlay'),
+    loadingMessage: $('loadingMessage'),
   };
+
+  function setLoading(show, message = '處理中…') {
+    if (!els.loadingOverlay) return;
+    els.loadingMessage.textContent = message;
+    els.loadingOverlay.hidden = !show;
+  }
 
   const fieldIds = [
     'grateful1', 'grateful2', 'grateful3',
@@ -291,14 +299,9 @@ const App = (() => {
 
   function updateSetupHints() {
     const origin = getAuthorizedOrigin();
-    const redirect = getRedirectUri();
     ['originHint', 'originDisplay'].forEach((id) => {
       const el = $(id);
       if (el) el.textContent = origin;
-    });
-    ['redirectHint', 'redirectDisplay'].forEach((id) => {
-      const el = $(id);
-      if (el) el.textContent = redirect;
     });
   }
 
@@ -314,35 +317,32 @@ const App = (() => {
       return;
     }
     els.signInBtn.disabled = true;
-    showToast('正在前往 Google 登入頁面…');
+    setLoading(true, '正在開啟 Google 登入視窗…');
     try {
       await Auth.signIn();
-    } catch (err) {
-      console.error(err);
-      showToast(translateOAuthError(err.message) || err.message || '登入失敗');
-      els.signInBtn.disabled = false;
-    }
-  }
-
-  async function completeSignIn() {
-    try {
-      await Drive.loadJournal();
-      loadDateEntry();
-      renderHistory();
-      updateUIForAuth(true, Auth.getProfile());
-      setSaveStatus('saved', '已連線雲端硬碟');
-      showToast('登入成功！日記已從雲端硬碟載入');
+      setLoading(true, '正在連線 Google 雲端硬碟…');
+      await completeSignIn();
     } catch (err) {
       console.error(err);
       if (Auth.isSignedIn()) {
         updateUIForAuth(true, Auth.getProfile());
         showToast('Google 已登入，但雲端硬碟連線失敗：' + err.message);
       } else {
-        throw err;
+        showToast(translateOAuthError(err.message) || err.message || '登入失敗');
       }
     } finally {
+      setLoading(false);
       els.signInBtn.disabled = false;
     }
+  }
+
+  async function completeSignIn() {
+    await Drive.loadJournal();
+    loadDateEntry();
+    renderHistory();
+    updateUIForAuth(true, Auth.getProfile());
+    setSaveStatus('saved', '已連線雲端硬碟');
+    showToast('登入成功！日記已從雲端硬碟載入');
   }
 
   function handleSignOut() {
@@ -423,35 +423,13 @@ const App = (() => {
       bindEvents();
       updateDateDisplay();
 
-      Auth.init(async ({ signedIn, profile, error }) => {
+      Auth.init(({ signedIn, profile, error }) => {
         if (error) {
           showToast(error);
           return;
         }
         updateUIForAuth(signedIn, profile);
-        if (signedIn) {
-          try {
-            await Drive.loadJournal();
-            loadDateEntry();
-            renderHistory();
-            setSaveStatus('saved', '已連線雲端硬碟');
-          } catch (err) {
-            showToast('載入日記失敗：' + err.message);
-          }
-        }
       });
-
-      if (hasClientId()) {
-        Auth.handleRedirectReturn()
-          .then(async (returned) => {
-            if (returned) await completeSignIn();
-          })
-          .catch((err) => {
-            console.error(err);
-            showToast(translateOAuthError(err.message) || err.message);
-            els.signInBtn.disabled = false;
-          });
-      }
     } catch (err) {
       console.error(err);
       showToast('應用程式初始化失敗：' + err.message);

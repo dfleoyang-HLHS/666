@@ -39,12 +39,6 @@ function hasClientId() {
   return Boolean(getClientId());
 }
 
-function getRedirectUri() {
-  const path = location.pathname.replace(/\/[^/]*$/, '/') || '/';
-  const normalized = path.endsWith('/') ? path : `${path}/`;
-  return `${location.origin}${normalized}`;
-}
-
 function getAuthorizedOrigin() {
   return location.origin;
 }
@@ -53,4 +47,19 @@ function translateOAuthError(error) {
   if (!error) return '登入失敗，請稍後再試';
   const code = typeof error === 'string' ? error : error.type || error.error || error.message;
   return OAUTH_ERROR_MESSAGES[code] || `登入失敗：${code}`;
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('連線逾時，請檢查網路後再試');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }

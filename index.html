@@ -174,16 +174,15 @@
         <li>前往「憑證」→「建立憑證」→「OAuth 用戶端 ID」</li>
         <li>應用程式類型選擇「網頁應用程式」</li>
         <li>在「<strong>已授權的 JavaScript 來源</strong>」加入：<code id="originHint"></code></li>
-        <li>在「<strong>已授權的重新導向 URI</strong>」加入：<code id="redirectHint"></code></li>
+        <li>「已授權的重新導向 URI」<strong>留空即可</strong>（使用彈出視窗登入）</li>
         <li>到 OAuth 同意畫面 → <strong>資料存取權（Data Access）</strong> → 新增範圍 <code>.../auth/drive.file</code></li>
         <li>複製產生的用戶端 ID，貼到下方</li>
       </ol>
       <div class="origin-box">
-        <p><strong>① GCP 憑證頁面需要填入兩個不同欄位：</strong></p>
-        <p>JavaScript 來源（不可含路徑）：<code id="originDisplay"></code></p>
-        <p>重新導向 URI（可含 /666/ 路徑）：<code id="redirectDisplay"></code></p>
+        <p><strong>請填入 GCP「已授權的 JavaScript 來源」：</strong></p>
+        <p><code id="originDisplay"></code></p>
         <p class="field-hint" style="margin-top:10px;color:var(--text-muted);">
-          這是兩個不同欄位。JavaScript 來源不能填 <code>/666/</code>；重新導向 URI 必須填完整路徑（如上）。
+          只能填網域，不能包含 <code>/666/</code> 或結尾斜線。重新導向 URI 不需設定。
         </p>
       </div>
       <div class="origin-box">
@@ -221,6 +220,14 @@
       </div>
     </div>
   </dialog>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay" hidden>
+    <div class="loading-card">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p id="loadingMessage">處理中…</p>
+    </div>
+  </div>
 
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
