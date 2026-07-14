@@ -6,4 +6,4 @@
  *
  * 設定後，使用者可直接點「使用 Google 帳號登入」，無需手動貼上 ID。
  */
-const DEFAULT_CLIENT_ID = '';
+const DEFAULT_CLIENT_ID = '600940139784-18lc4lc915llmha9fcve5uh7dse5t2oe.apps.googleusercontent.com';
