@@ -291,8 +291,9 @@ const App = (() => {
 
   function checkClientIdSetup() {
     const configured = hasClientId();
-    els.setupNotice.hidden = configured;
-    if (!configured) {
+    const showSetup = !configured && !hasBuiltInClientId();
+    els.setupNotice.hidden = !showSetup;
+    if (!configured && !hasBuiltInClientId()) {
       els.clientIdInput.value = '';
     }
   }

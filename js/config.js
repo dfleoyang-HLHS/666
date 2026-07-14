@@ -39,6 +39,10 @@ function hasClientId() {
   return Boolean(getClientId());
 }
 
+function hasBuiltInClientId() {
+  return typeof DEFAULT_CLIENT_ID !== 'undefined' && Boolean(DEFAULT_CLIENT_ID);
+}
+
 function getAuthorizedOrigin() {
   return location.origin;
 }
